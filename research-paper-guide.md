@@ -2,7 +2,7 @@
 
 ## Hướng Nghiên Cứu: Parallel Sorting Optimization cho Real-time Embedded Systems
 
-> **Chủ đề chính**: KeyEntry & KeyIndexer - Memory-Efficient Indexing với Hybrid Parallel QuickSort
+> **Chủ đề**: KeyEntry & KeyIndexer - Memory-Efficient Indexing với Hybrid Parallel QuickSort
 >
 > **Phù hợp**: Công nghệ thông tin, Điện tử Viễn thông
 
@@ -37,12 +37,6 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 │                                                                      │
 │   ┌──────────────────────────────────────────────────────────────┐  │
 │   │                     User Application                          │  │
-│   └──────────────────────────────────────────────────────────────┘  │
-│                                   │                                  │
-│                                   ▼                                  │
-│   ┌──────────────────────────────────────────────────────────────┐  │
-│   │                     JSON API Layer                            │  │
-│   │   Query, Filter, Pagination, Aggregation                     │  │
 │   └──────────────────────────────────────────────────────────────┘  │
 │                                   │                                  │
 │                                   ▼                                  │
@@ -145,7 +139,7 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 │              │                                                      │
 │              └── else → Partition + Parallel.Invoke()               │
 │                        │                    │                        │
-│                        ├── ParallelSort(left, pIndex)                │
+│                        ├── ParallelSort(left, pIndex)              │
 │                        └── ParallelSort(pIndex+1, right)            │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -163,41 +157,29 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 
 ### 2.3 So Sánh với Alternatives
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Comparison: KeyIndexer vs Other Approaches                         │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Feature              │ VstHelper │ Array.Sort │ B-Tree │ SkipList  │
-│  ─────────────────────┼───────────┼───────────┼────────┼─────────  │
-│  Fixed memory layout  │    ✅     │    ❌     │   ❌   │    ❌     │
-│  Parallel sort       │    ✅     │    ❌     │   ❌   │    ❌     │
-│  Insertion sort hybrid│   ✅     │    ❌     │   ❌   │    ❌     │
-│  Median-of-three      │    ✅     │    ✅     │   N/A  │    ❌     │
-│  Cache line aligned   │    ✅     │    ❌     │   ❌   │    ❌     │
-│  Lock-free           │    ✅     │    N/A    │   ❌   │    ❌     │
-│  Range query support  │    ✅     │    ✅     │   ✅   │    ✅     │
-│  Insert complexity   │    O(n)   │   O(nlogn)│ O(logn)│ O(logn)  │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Feature | VstHelper | Array.Sort | B-Tree | SkipList |
+|---|---|---|---|---|
+| Fixed memory layout | ✅ | ❌ | ❌ | ❌ |
+| Parallel sort | ✅ | ❌ | ❌ | ❌ |
+| Insertion sort hybrid | ✅ | ❌ | ❌ | ❌ |
+| Median-of-three | ✅ | ✅ | N/A | ❌ |
+| Cache line aligned | ✅ | ❌ | ❌ | ❌ |
+| Lock-free | ✅ | N/A | ❌ | ❌ |
+| Range query support | ✅ | ✅ | ✅ | ✅ |
+| Insert complexity | O(n) | O(nlogn) | O(logn) | O(logn) |
 
 ---
 
 ## 3. Hướng Nghiên Cứu
 
-### 3.1 Hướng Chính: Parallel Sorting Optimization
+### 3.1 Tiêu Đề Đề Xuất
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                      │
-│  "Parallel QuickSort với Hybrid Optimization cho                      │
-│   Memory-Efficient Indexing trong Embedded Database"                 │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+"Parallel QuickSort with Hybrid Optimization for
+ Memory-Efficient Indexing in Embedded Databases"
 ```
 
-#### Tại sao hướng này phù hợp cho CNTT/ĐTVT:
+### 3.2 Tại sao hướng này phù hợp cho CNTT/ĐTVT
 
 | Lý do | Giải thích |
 |---|---|
@@ -207,7 +189,7 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 | **Performance optimization** | Cache-aware design, memory layout |
 | **Benchmark-driven** | Dễ đo lường, so sánh được |
 
-### 3.2 Các Điểm Novelty
+### 3.3 Các Điểm Novelty
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -216,40 +198,21 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 │                                                                      │
 │  1. 32-byte Fixed-Size KeyEntry                                     │
 │     ├── Union tricks cho heterogeneous data                         │
-│     ├── 16-byte hash storage (2 x long)                              │
-│     └── Cache line efficiency (2 lines vs 4+ của B-Tree)            │
+│     ├── 16-byte hash storage (2 x long)                             │
+│     └── Cache line efficiency (2 lines vs 4+ của B-Tree)           │
 │                                                                      │
 │  2. Hybrid Parallel QuickSort                                        │
 │     ├── Insertion sort cho small ranges (< 128)                     │
 │     ├── Median-of-three pivot selection                             │
-│     ├── Parallel.Invoke cho large ranges                           │
+│     ├── Parallel.Invoke cho large ranges                            │
 │     └── Stack-based iterative implementation                        │
 │                                                                      │
 │  3. Cache-Conscious Design Analysis                                  │
 │     ├── Memory bandwidth utilization                                │
 │     ├── Cache miss rate correlation                                 │
-│     └── Performance vs data size analysis                          │
+│     └── Performance vs data size analysis                           │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
-```
-
-### 3.3 Các Hướng Phụ (Optional Extensions)
-
-```
-Hướng 1: Lock-free Memory Allocator
-├── Tập trung: Slab allocator với bitmask
-├── Benchmark: So sánh với malloc/free
-└── Scope: Paper riêng
-
-Hướng 2: Hash Function Optimization
-├── Tập trung: XXHash64, MD5 inline hashing
-├── Benchmark: So sánh với built-in hash
-└── Scope: Có thể combine với hướng chính
-
-Hướng 3: Multi-threaded Index Building
-├── Tập trung: Bulk loading optimization
-├── Benchmark: Sequential vs parallel index build
-└── Scope: Có thể combine với hướng chính
 ```
 
 ---
@@ -279,7 +242,7 @@ Hướng 3: Multi-threaded Index Building
 │  Metrics:                                                           │
 │  ─────────────────────────────────────────────────────────────────  │
 │  • Primary: Cache miss rate (%)                                     │
-│  • Secondary: Memory bandwidth utilization (GB/s)                   │
+│  • Secondary: Memory bandwidth utilization (GB/s)                    │
 │  • Baseline: Array.Sort, B-Tree implementation                      │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -292,18 +255,18 @@ Hướng 3: Multi-threaded Index Building
 │  Research Question 2                                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  "Hybrid QuickSort (insertion sort + parallel divide) có hiệu quả  │
+│  "Hybrid QuickSort (insertion sort + parallel divide) có hiệu quả    │
 │   hơn pure parallel sort cho embedded workload không?"               │
 │                                                                      │
 │  Motivation:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
 │  • Pure parallel sort có overhead từ synchronization               │
-│  • Insertion sort nhanh hơn QuickSort cho small arrays              │
+│  • Insertion sort nhanh hơn QuickSort cho small arrays               │
 │  • Threshold 128 được chọn dựa trên cache size                      │
 │                                                                      │
 │  Hypothesis:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
-│  H2: Hybrid approach nhanh hơn 20-30% so với pure parallel        │
+│  H2: Hybrid approach nhanh hơn 20-30% so với pure parallel         │
 │      cho N < 1,000,000 elements                                      │
 │                                                                      │
 │  Metrics:                                                           │
@@ -322,7 +285,7 @@ Hướng 3: Multi-threaded Index Building
 │  Research Question 3                                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  "KeyIndexer có scale linearly với số cores không?"                  │
+│  "KeyIndexer có scale linearly với số cores không?"                 │
 │                                                                      │
 │  Motivation:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
@@ -332,12 +295,12 @@ Hướng 3: Multi-threaded Index Building
 │                                                                      │
 │  Hypothesis:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
-│  H3: Đạt >80% parallel efficiency với 4 cores cho N > 1M            │
+│  H3: Đạt >80% parallel efficiency với 4 cores cho N > 1M           │
 │                                                                      │
 │  Metrics:                                                           │
 │  ─────────────────────────────────────────────────────────────────  │
 │  • Primary: Speedup ratio (T_sequential / T_parallel)               │
-│  • Secondary: Parallel efficiency (%)                              │
+│  • Secondary: Parallel efficiency (%)                               │
 │  • Baseline: Sequential QuickSort, Array.Sort                       │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -347,16 +310,16 @@ Hướng 3: Multi-threaded Index Building
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Research Question 4 (Optional - cho ĐTVT)                           │
+│  Research Question 4                                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  "KeyIndexer có đảm bảo real-time constraints không?"               │
 │                                                                      │
 │  Motivation:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • Real-time systems cần deterministic timing                       │
+│  • Real-time systems cần deterministic timing                      │
 │  • GC pause là vấn đề lớn trong .NET                               │
-│  • VstHelper dùng unsafe code, zero allocation                       │
+│  • VstHelper dùng unsafe code, zero allocation                      │
 │                                                                      │
 │  Hypothesis:                                                         │
 │  ─────────────────────────────────────────────────────────────────  │
@@ -365,8 +328,8 @@ Hướng 3: Multi-threaded Index Building
 │  Metrics:                                                           │
 │  ─────────────────────────────────────────────────────────────────  │
 │  • Primary: Max latency (ms)                                        │
-│  • Secondary: Latency variance, p99 latency                        │
-│  • Baseline: List.Sort, ConcurrentBag                              │
+│  • Secondary: Latency variance, p99 latency                         │
+│  • Baseline: List.Sort, ConcurrentBag                               │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -399,7 +362,7 @@ Databases để tìm:
 
 Inclusion criteria:
 ─────────────────────────────────────────────────────────────────────
-• Paper từ 2015 trở lại (hoặc foundational papers trước đó)
+• Paper từ 2015 trở lên (hoặc foundational papers trước đó)
 • Có benchmark/evaluation
 • Liên quan đến: sorting, caching, parallel processing
 • Peer-reviewed hoặc từ top venues
@@ -452,24 +415,16 @@ Potential Citations:
 
 #### Bước 2.1: Experiment Matrix
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Experiment Matrix                                                   │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Exp# │ RQ │ Metric           │ Baseline      │ Variables           │
-│  ─────┼────┼──────────────────┼──────────────┼─────────────────    │
-│  E1   │ RQ1│ Cache miss rate  │ Array.Sort   │ Data size           │
-│  E2   │ RQ1│ Memory bandwidth  │ B-Tree impl  │ Array size          │
-│  E3   │ RQ2│ Sort time (ms)   │ Array.Sort   │ N (10K-10M)         │
-│  E4   │ RQ2│ CPU utilization  │ Sequential   │ N, cores            │
-│  E5   │ RQ3│ Speedup ratio    │ Seq QuickSort│ Thread count        │
-│  E6   │ RQ3│ Parallel eff. %  │ Ideal linear │ Thread count        │
-│  E7   │ RQ4│ Max latency (ms)  │ List.Sort    │ N, cores            │
-│  E8   │ RQ4│ Latency variance  │ ConcurrentBag│ N                   │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Exp# | RQ | Metric | Baseline | Variables |
+|------|----|--------|----------|-----------|
+| E1 | RQ1 | Cache miss rate | Array.Sort | Data size |
+| E2 | RQ1 | Memory bandwidth | B-Tree impl | Array size |
+| E3 | RQ2 | Sort time (ms) | Array.Sort | N (10K-10M) |
+| E4 | RQ2 | CPU utilization | Sequential | N, cores |
+| E5 | RQ3 | Speedup ratio | Seq QuickSort | Thread count |
+| E6 | RQ3 | Parallel eff. % | Ideal linear | Thread count |
+| E7 | RQ4 | Max latency (ms) | List.Sort | N, cores |
+| E8 | RQ4 | Latency variance | ConcurrentBag | N |
 
 #### Bước 2.2: Hardware Configuration
 
@@ -571,7 +526,7 @@ Reproducibility:
 
 ### 5.4 Phase 4: Writing (2-3 tuần)
 
-#### Writing Order (Khuyến nghị):
+#### Thứ tự viết (Khuyến nghị):
 
 ```
 1. Methods & Evaluation (viết trước - có results)
@@ -682,43 +637,15 @@ public void Scalability_Test()
     "array_size": 1000000,
     "thread_counts": [1, 2, 4, 8, 16],
     "data": {
-      "sequential_ms": {
-        "mean": 245.3,
-        "stddev": 12.1
-      },
-      "parallel_1t_ms": {
-        "mean": 243.1,
-        "stddev": 11.8
-      },
-      "parallel_2t_ms": {
-        "mean": 128.7,
-        "stddev": 8.3
-      },
-      "parallel_4t_ms": {
-        "mean": 68.4,
-        "stddev": 5.2
-      },
-      "parallel_8t_ms": {
-        "mean": 38.2,
-        "stddev": 3.1
-      },
-      "parallel_16t_ms": {
-        "mean": 31.5,
-        "stddev": 2.8
-      }
+      "sequential_ms": { "mean": 245.3, "stddev": 12.1 },
+      "parallel_1t_ms": { "mean": 243.1, "stddev": 11.8 },
+      "parallel_2t_ms": { "mean": 128.7, "stddev": 8.3 },
+      "parallel_4t_ms": { "mean": 68.4, "stddev": 5.2 },
+      "parallel_8t_ms": { "mean": 38.2, "stddev": 3.1 },
+      "parallel_16t_ms": { "mean": 31.5, "stddev": 2.8 }
     },
-    "speedup": {
-      "2t": 1.89,
-      "4t": 3.59,
-      "8t": 6.42,
-      "16t": 7.72
-    },
-    "efficiency": {
-      "2t": 0.95,
-      "4t": 0.90,
-      "8t": 0.80,
-      "16t": 0.48
-    }
+    "speedup": { "2t": 1.89, "4t": 3.59, "8t": 6.42, "16t": 7.72 },
+    "efficiency": { "2t": 0.95, "4t": 0.90, "8t": 0.80, "16t": 0.48 }
   }
 }
 ```
@@ -765,8 +692,8 @@ Timing:
 │                                                                      │
 │  KeyIndexer.Sort():                                                  │
 │  ─────────────────────────────────────────────────────────────────  │
-│  Worst Case:   O(n log n)  [hoặc O(n²) nếu pivot tệ]              │
-│  Average Case: O(n log n)                                          │
+│  Worst Case:   O(n log n)  [hoặc O(n²) nếu pivot tệ]               │
+│  Average Case: O(n log n)                                           │
 │  Best Case:    O(n log n)                                          │
 │                                                                      │
 │  ParallelSort:                                                       │
@@ -781,7 +708,7 @@ Timing:
 │  Trong đó:                                                          │
 │  • S = sequential fraction                                          │
 │  • N = number of cores                                              │
-│  • Insertion sort hybrid giảm S (sequential overhead)             │
+│  • Insertion sort hybrid giảm S (sequential overhead)               │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -800,12 +727,12 @@ Timing:
 │                                                                      │
 │  KeyIndexer:                                                        │
 │  ─────────────────────────────────────────────────────────────────  │
-│  Stack for QuickSort: O(log n) entries (iterative, không recursion)│
-│  Additional: O(1) auxiliary space                                  │
+│  Stack for QuickSort: O(log n) entries (iterative, không recursion) │
+│  Additional: O(1) auxiliary space                                   │
 │                                                                      │
 │  So với:                                                            │
 │  ─────────────────────────────────────────────────────────────────  │
-│  Array.Sort: O(log n) stack space (recursive)                      │
+│  Array.Sort: O(log n) stack space (recursive)                       │
 │  B-Tree: O(n) space + O(height) stack                              │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -815,7 +742,7 @@ Timing:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Cache Complexity Analysis                                            │
+│  Cache Complexity Analysis                                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  KeyEntry (32 bytes):                                               │
@@ -826,13 +753,13 @@ Timing:
 │                                                                      │
 │  Cache Miss Analysis:                                               │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • B-Tree node (64-256 bytes): 2-4 cache lines per node           │
-│  • KeyEntry (32 bytes): 1-2 cache lines per entry                 │
-│  • Improvement: ~50% fewer cache misses                            │
+│  • B-Tree node (64-256 bytes): 2-4 cache lines per node             │
+│  • KeyEntry (32 bytes): 1-2 cache lines per entry                  │
+│  • Improvement: ~50% fewer cache misses                             │
 │                                                                      │
 │  Prefetching:                                                       │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • Sequential access pattern = hardware prefetcher hoạt động tốt  │
+│  • Sequential access pattern = hardware prefetcher hoạt động tốt   │
 │  • Loop over entries: predictable pattern                           │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -927,24 +854,15 @@ REFERENCES (15-20 papers)
 
 ### 8.2 Word Count Guide
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Word Count Breakdown                                                │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Section          │ Target Words │ Notes                            │
-│  ─────────────────┼──────────────┼─────────────────────────────     │
-│  Abstract         │   150-250    │ Standalone summary              │
-│  Introduction     │   800-1000   │ 1 page                          │
-│  Background       │   1000-1500   │ 1-1.5 pages                    │
-│  Design           │   2000-2500   │ 2-2.5 pages                    │
-│  Evaluation       │   1500-2000   │ 2 pages                        │
-│  Conclusion       │   300-500     │ 0.5 page                       │
-│  ─────────────────┼──────────────┼─────────────────────────────    │
-│  TOTAL            │   5750-8750   │ 8-10 pages (with figures)      │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
+| Section | Target Words | Notes |
+|---------|--------------|-------|
+| Abstract | 150-250 | Standalone summary |
+| Introduction | 800-1000 | 1 page |
+| Background | 1000-1500 | 1-1.5 pages |
+| Design | 2000-2500 | 2-2.5 pages |
+| Evaluation | 1500-2000 | 2 pages |
+| Conclusion | 300-500 | 0.5 page |
+| **TOTAL** | 5750-8750 | 8-10 pages (with figures) |
 
 ### 8.3 Figure Requirements
 
@@ -962,25 +880,25 @@ REFERENCES (15-20 papers)
 │  └── Annotations for cache lines                                    │
 │                                                                      │
 │  Figure 3: KeyIndexer Sort Flowchart                                │
-│  ├── ParallelSort → QuickSort → InsertionSort                      │
+│  ├── ParallelSort → QuickSort → InsertionSort                       │
 │  └── Decision points marked                                        │
 │                                                                      │
 │  Figure 4: Cache Miss Rate Comparison (RQ1)                         │
-│  ├── Bar chart: KeyEntry vs Array vs B-Tree                        │
-│  └── X-axis: Array size, Y-axis: Cache misses (%)                  │
+│  ├── Bar chart: KeyEntry vs Array vs B-Tree                         │
+│  └── X-axis: Array size, Y-axis: Cache misses (%)                   │
 │                                                                      │
-│  Figure 5: Sort Time vs Array Size (RQ2)                           │
-│  ├── Line chart with multiple series                               │
+│  Figure 5: Sort Time vs Array Size (RQ2)                            │
+│  ├── Line chart with multiple series                                │
 │  ├── X-axis: N (log scale), Y-axis: Time (ms)                      │
 │  └── Series: Array.Sort, SeqQS, KeyIndexer                          │
 │                                                                      │
 │  Figure 6: Speedup vs Core Count (RQ3)                              │
-│  ├── Line chart with speedup ratio                                 │
+│  ├── Line chart with speedup ratio                                  │
 │  ├── X-axis: Thread count, Y-axis: Speedup                         │
 │  └── Ideal linear line overlay                                     │
 │                                                                      │
-│  Figure 7: Parallel Efficiency (RQ3)                               │
-│  ├── Line chart                                                    │
+│  Figure 7: Parallel Efficiency (RQ3)                                │
+│  ├── Line chart                                                     │
 │  ├── X-axis: Thread count, Y-axis: Efficiency (%)                  │
 │  └── 100% line for reference                                       │
 │                                                                      │
@@ -1008,7 +926,7 @@ REFERENCES (15-20 papers)
 |---|---|---|---|
 | 5 | LaMarca, A. "Cache-Conscious Index Structures" | 1999 | Cache optimization (classic) |
 | 6 | Rao, J. "Making B+-Trees Cache Conscious" | 2000 | B-Tree cache design |
-| 7 | Chhugani, J. "Efficient and Scalable Multi-way | 2008 | Parallel sorting cache effects |
+| 7 | Chhugani, J. "Efficient and Scalable Multi-way" | 2008 | Parallel sorting cache effects |
 | 8 | Bingmann, T. "SIMD-Sort" | 2016 | Ultra-fast sorting |
 
 #### .NET/Performance
@@ -1051,21 +969,21 @@ Search Strategies:
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  Sort History:                                                       │
-│  "QuickSort was introduced by Hoare [1] and remains one of the     │
-│   most widely used sorting algorithms due to its O(n log n)       │
-│   average performance..."                                          │
+│  "QuickSort was introduced by Hoare [1] and remains one of the      │
+│   most widely used sorting algorithms due to its O(n log n)         │
+│   average performance..."                                           │
 │                                                                      │
 │  Median-of-three:                                                   │
-│  "We use median-of-three pivot selection to reduce the            │
-│   probability of O(n²) worst case [4]..."                        │
+│  "We use median-of-three pivot selection to reduce the              │
+│   probability of O(n²) worst case [4]..."                           │
 │                                                                      │
 │  Parallel Sorting:                                                  │
-│  "Our approach follows the fork-join model proposed in [2],       │
-│   but adds insertion sort optimization for small subarrays..."     │
+│  "Our approach follows the fork-join model proposed in [2],        │
+│   but adds insertion sort optimization for small subarrays..."      │
 │                                                                      │
 │  Cache Efficiency:                                                  │
-│  "Previous work has shown that fixed-size structures can reduce   │
-│   cache misses by 40-50% [5]..."                                  │
+│  "Previous work has shown that fixed-size structures can reduce     │
+│   cache misses by 40-50% [5]..."                                    │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1074,66 +992,54 @@ Search Strategies:
 
 ## 10. Timeline
 
-### 10.1 6-Week Plan (Rút gọn)
+### 10.1 6-Week Plan
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Week 1: Literature Review                                         │
+│  Week 1: Literature Review                                           │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
 │  Days 1-2: Read 5 foundational papers (QuickSort, cache design)    │
 │  Days 3-4: Read 5-10 additional papers                              │
 │  Days 5-7: Write reading notes, identify gaps                       │
-│                                                                      │
-│  Deliverable: Reading notes + paper outline                          │
+│  Deliverable: Reading notes + paper outline                         │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Week 2: Experiment Setup + Initial Benchmark                        │
+│  Week 2: Experiment Setup + Initial Benchmark                       │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
 │  Days 1-2: Setup BenchmarkDotNet project                            │
-│  Days 3-4: Implement RQ1, RQ2 benchmarks                           │
+│  Days 3-4: Implement RQ1, RQ2 benchmarks                            │
 │  Days 5-6: Run initial tests, verify setup                         │
-│  Day 7: Run full benchmark suite                                   │
-│                                                                      │
+│  Day 7: Run full benchmark suite                                    │
 │  Deliverable: Raw benchmark data                                    │
 ├─────────────────────────────────────────────────────────────────────┤
 │  Week 3: Analysis + RQ3, RQ4 Benchmarks                            │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Days 1-2: Complete RQ3 (scalability) benchmarks                     │
-│  Days 3-4: Complete RQ4 (latency) benchmarks                        │
-│  Days 5-6: Statistical analysis, generate figures                   │
+│  Days 1-2: Complete RQ3 (scalability) benchmarks                   │
+│  Days 3-4: Complete RQ4 (latency) benchmarks                       │
+│  Days 5-6: Statistical analysis, generate figures                 │
 │  Day 7: Verify results, check significance                          │
-│                                                                      │
-│  Deliverable: Analyzed results + figures                            │
+│  Deliverable: Analyzed results + figures                           │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Week 4: First Draft                                                 │
+│  Week 4: First Draft                                               │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Days 1-2: Write Methods + Evaluation sections                       │
+│  Days 1-2: Write Methods + Evaluation sections                     │
 │  Days 3-4: Write Design section                                     │
 │  Days 5-6: Write Introduction + Background                         │
 │  Day 7: Write Abstract + Conclusion                                 │
-│                                                                      │
-│  Deliverable: Complete first draft (8-10 pages)                     │
+│  Deliverable: Complete first draft (8-10 pages)                    │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Week 5: Revision + Polish                                           │
+│  Week 5: Revision + Polish                                          │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  Days 1-3: Address feedback, revise                                 │
-│  Days 4-5: Polish writing, grammar check                            │
-│  Days 6-7: Final proof-reading, format check                        │
-│                                                                      │
-│  Deliverable: Polished draft                                         │
+│  Days 1-3: Address feedback, revise                                │
+│  Days 4-5: Polish writing, grammar check                           │
+│  Days 6-7: Final proof-reading, format check                       │
+│  Deliverable: Polished draft                                        │
 ├─────────────────────────────────────────────────────────────────────┤
-│  Week 6: Submission                                                  │
+│  Week 6: Submission                                                 │
 ├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
 │  Days 1-2: Final format check                                       │
-│  Days 3-4: Prepare supplementary materials                          │
+│  Days 3-4: Prepare supplementary materials                         │
 │  Days 5-7: Submit to target venue                                  │
-│                                                                      │
-│  Deliverable: Submitted paper                                        │
+│  Deliverable: Submitted paper                                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1148,7 +1054,7 @@ Research Phase:
 ─────────────────────────────────────────────────────────────────────
 [ ] Read 15+ relevant papers
 [ ] Take detailed notes for each paper
-[ ] Define 3-4 research questions with hypotheses
+[ ] Define 4 research questions with hypotheses
 [ ] Identify unique contribution (novelty)
 [ ] Setup benchmark environment
 ```
@@ -1228,35 +1134,31 @@ Pre-submission:
 
 ## 12. Venue Selection
 
-### Top Venues
+### Recommended Venues
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Recommended Venues                                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
 │  Primary (Best Fit):                                                │
-│  ─────────────────────────────────────────────────────────────────  │
+├─────────────────────────────────────────────────────────────────────┤
 │  ICPADS - Int'l Conf on Parallel & Distributed Systems             │
-│  • Focus: Parallel algorithms, distributed systems                   │
-│  • Acceptance: ~40%                                               │
+│  • Focus: Parallel algorithms, distributed systems                  │
+│  • Acceptance: ~40%                                                 │
 │  • Notes: Rất phù hợp cho parallel sorting topic                   │
 │                                                                      │
 │  ICPP - Int'l Conf on Parallel Processing                          │
 │  • Focus: Parallel processing                                       │
-│  • Acceptance: ~35%                                               │
+│  • Acceptance: ~35%                                                 │
 │  • Notes: Chuyên về parallel computing                              │
-│                                                                      │
-│  Secondary:                                                        │
-│  ─────────────────────────────────────────────────────────────────  │
+├─────────────────────────────────────────────────────────────────────┤
+│  Secondary:                                                         │
+├─────────────────────────────────────────────────────────────────────┤
 │  IEEE TPDS - Trans on Parallel & Distributed Systems               │
-│  • Journal, less time pressure                                     │
-│  • Good for detailed technical papers                              │
+│  • Journal, less time pressure                                      │
+│  • Good for detailed technical papers                               │
 │                                                                      │
-│  HPCC - High Performance Computing Conf                            │
-│  • Broader HPC focus                                               │
-│  • Good for performance-oriented work                              │
-│                                                                      │
+│  HPCC - High Performance Computing Conf                             │
+│  • Broader HPC focus                                                │
+│  • Good for performance-oriented work                               │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1264,35 +1166,33 @@ Pre-submission:
 
 ## 13. Expected Results
 
-### 13.1 Hypothesized Results
-
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │  Expected Results Summary                                           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
-│  RQ1: Cache Efficiency                                              │
+│  RQ1: Cache Efficiency                                               │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • Cache miss reduction: 40-50% vs B-Tree                         │
+│  • Cache miss reduction: 40-50% vs B-Tree                          │
 │  • Memory bandwidth: Similar or slightly better                    │
 │                                                                      │
-│  RQ2: Sort Performance                                             │
+│  RQ2: Sort Performance                                              │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • KeyIndexer.Sort: 1.5-2x faster than Array.Sort                 │
-│  • Hybrid advantage: 20-30% faster than pure parallel             │
+│  • KeyIndexer.Sort: 1.5-2x faster than Array.Sort                  │
+│  • Hybrid advantage: 20-30% faster than pure parallel            │
 │  • Break-even point: ~1M elements                                  │
 │                                                                      │
-│  RQ3: Scalability                                                  │
+│  RQ3: Scalability                                                   │
 │  ─────────────────────────────────────────────────────────────────  │
 │  • 4 cores: ~3.5x speedup (87% efficiency)                        │
 │  • 8 cores: ~6x speedup (75% efficiency)                          │
 │  • 16 cores: ~8x speedup (50% efficiency)                         │
 │                                                                      │
-│  RQ4: Real-time Latency                                            │
+│  RQ4: Real-time Latency                                             │
 │  ─────────────────────────────────────────────────────────────────  │
-│  • 100K keys: max latency < 10ms                                  │
-│  • Zero GC pauses (unsafe code)                                    │
-│  • Consistent variance                                            │
+│  • 100K keys: max latency < 10ms                                   │
+│  • Zero GC pauses (unsafe code)                                     │
+│  • Consistent variance                                              │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -1319,10 +1219,10 @@ Issue: Paper too long/short
 
 ---
 
-> **Ghi chú**: Đây là hướng dẫn toàn diện cho hướng nghiên cứu **Parallel Sorting Optimization với KeyEntry/KeyIndexer**. File này tập trung vào các điểm mạnh của code hiện có và đủ để viết một bài báo khoa học hoàn chỉnh.
+> **Ghi chú**: Đây là hướng dẫn toàn diện cho hướng nghiên cứu **Parallel Sorting Optimization với KeyEntry/KeyIndexer**.
 
 ---
 
 *Tài liệu cho dự án VstHelper - KeyEntry & KeyIndexer*
-*Phiên bản: 2.0 - Hướng: Parallel Sorting Optimization*
+*Phiên bản: 3.0 - Hướng: Parallel Sorting Optimization*
 *Ngày: Tháng 5, 2026*
