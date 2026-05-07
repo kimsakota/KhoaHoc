@@ -115,10 +115,10 @@ VstHelper là một embedded NoSQL/document database engine viết bằng C# v�
 
 #### Đặc điểm quan trọng:
 
-1. **Fixed 32-byte size**: Không phải tính toán sizeof() runtime
-2. **Union tricks**: Offset/Buffer, RecordLength/IndexPosition dùng chung memory
-3. **Cache-efficient**: 32 bytes = 2 cache lines (64-byte typical)
-4. **XXHash64 dual hash**: 16 bytes hash lưu trực tiếp trong struct
+1. **Fixed 32-byte size**: Không phải tính toán sizeof() runtime.
+2. **Union tricks**: Offset/Buffer, RecordLength/IndexPosition dùng chung memory.
+3. **Cache-efficient**: 32 bytes = 2 cache lines (64-byte typical).
+4. **XXHash64 dual hash**: 16 bytes hash lưu trực tiếp trong struct.
 
 ### 2.2 KeyIndexer - Parallel QuickSort
 
